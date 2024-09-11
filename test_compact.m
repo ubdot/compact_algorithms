@@ -2,14 +2,15 @@
 clear
 % clc
 param.F         = 0.5;
-param.D         = 10;
+param.D         = 20;
 param.CR        = 1/2^(1/(0.25*param.D));
 param.NP        = 300;
-param.lowLim    = -5.12*ones(param.D,1);
-param.upLim     = 5.12*ones(param.D,1);
+param.lowLim    = -100*ones(param.D,1);
+param.upLim     = 100*ones(param.D,1);
 param.maxEval   = 5000*param.D;
+param.cross_op  = 2; %used for the cDE algorithm, exp crossover
 param.pe        = true;
-param.age       = 10000;
+param.age       = 5000;
 param.pa        = 0.25;
 param.rho       = 0.01;
 %%
