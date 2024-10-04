@@ -50,9 +50,10 @@ function [elite,fittEle] = cDE(fittFun, param)
 
     for nEval = 2 : maxEval
         if cross_op == 1
+            k = randi(D);
             for i=1:D
                 %binary crossover
-                if(rand > CR)
+                if(rand > CR && k ~= i)
                     %if the random value is gerater than Cr the elite value is
                     %copied to the offspring
                     xoff(i)=elite(i);
@@ -126,37 +127,14 @@ function [elite,fittEle] = cDE(fittFun, param)
         %If the offspring is better than the original elite the PV is updated accordingly.
         %The mean is updated in a toroidal way.
         if(fittOff < fittEle || (ageDE <= ageAct && ~persis))
-            
-            for i=1:D %update PDF when off is the
-                mu = muV(i);
-                muV(i)  = muV(i) + (1/Np)*(xoff(i) - elite(i));
-                
-                if(muV(i) < -1)
-                    muV(i) = muV(i)+2;
-                elseif (muV(i) > 1)
-                    muV(i) = muV(i)-2;
-                end
-                temp    = stdV(i)^2 + mu^2 - muV(i)^2 + (1/Np)*(xoff(i)^2 - elite(i)^2); %This value coluld be negative
-                temp    = sqrt(abs(temp));  %Is need get the absolute value in order to avoid errors
-                stdV(i) = min([10, temp]);  %Tis is to avoid the grow of std, the max value is 10
-                elite(i)= xoff(i);
-                fittEle = fittOff;
-                ageAct  = 0;                %Used if not persistent
-            end
+            [muV, stdV] = upd_PV(muV, stdV, xoff, elite, Np);
+            elite   = xoff;
+            fittEle = fittOff;
+            ageAct  = 0;                %Used if not persistent
         else % this part is the same of the if part just invert the elite and offspring to update the PV
-            for i=1:D
-                mu = muV(i);
-                muV(i)  = muV(i) + (1/Np)*(elite(i)-xoff(i));
-                if(muV(i) < -1)
-                    muV(i) = muV(i)+2;
-                elseif (muV(i) > 1)
-                    muV(i) = muV(i)-2;
-                end
-                temp    = stdV(i)^2 + mu^2 - muV(i)^2 + (1/Np)*(elite(i)^2 - xoff(i)^2);
-                temp    = sqrt(abs(temp));
-                stdV(i) = min([10, temp]);
-                ageAct  = ageAct + 1;
-            end
+            [muV, stdV] = upd_PV(muV, stdV, elite, xoff, Np);
+            ageAct  = ageAct + 1;
         end
     end
+%         disp([muV, stdV] )
 end

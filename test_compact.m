@@ -2,8 +2,8 @@
 clear
 % clc
 param.F         = 0.5;
-param.D         = 20;
-param.CR        = 1/2^(1/(0.25*param.D));
+param.D         = 30;
+param.CR        = 1/2^(1/(0.25*param.D));%cDE%0.3;%cGA
 param.NP        = 300;
 param.lowLim    = -100*ones(param.D,1);
 param.upLim     = 100*ones(param.D,1);
@@ -14,17 +14,17 @@ param.age       = 5000;
 param.pa        = 0.25;
 param.rho       = 0.01;
 %%
-rng(1,"twister"); %Random seed
-n_max=10;
+% rng(1,"twister"); %Random seed
+n_max=3;
 fx=zeros(n_max,1);
 x=zeros(n_max, param.D);
 minFx = Inf;
 %% Calling function 
 
 for i=1:n_max
-%     [x(i,:),fx(i)]=cDE(@fitt, param);
+    [x(i,:),fx(i)]=cDE(@fitt, param);
 %     [x(i,:),fx(i)]=cPSO(@fitt, param);
-    [x(i,:),fx(i)]=rcGA(@fitt, param);
+%     [x(i,:),fx(i)]=rcGA(@fitt, param);
 %     disp([i, fx(i)]);
 end
 %% Get stats
@@ -52,7 +52,7 @@ function fx=fitt(x)
 %     end
 
     %Schwefel 2.21 [-100, 100]
-%     fx=max(abs(x));
+    fx=max(abs(x));
 
     %Rosenbrock [-30,30]
 %     fx=sum(100*(x(2:30)-(x(1:30-1).^2)).^2+(x(1:30-1)-1).^2);
@@ -61,7 +61,7 @@ function fx=fitt(x)
 % fx=1/30*sum(-x.*sin(sqrt(abs(x))));
 
     %Rastrigin [-5.12, 5.12]
-fx=sum(x.^2-10*cos(2*pi.*x))+10*30; 
+% fx=sum(x.^2-10*cos(2*pi.*x))+10*30; 
 
     %Ackley1 [-35, 35]
 %     fx=-20*exp(-.2*sqrt(sum(x.^2)/30))-exp(sum(cos(2*pi.*x))/30)+20+exp(1);

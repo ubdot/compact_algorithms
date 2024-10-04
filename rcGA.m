@@ -13,7 +13,7 @@ function [elite,fittEle] = rcGA(fittFun, param)
 %   Returns the best solution found elite, and the fitess value.
     lowLim  = param.lowLim;
     upLim   = param.upLim;
-%     CR      = param.CR; %by default the algorithm does not have crossover
+    CR      = param.CR; %by default the algorithm does not have crossover
     Np      = param.NP;
     D       = param.D;
     maxEval = param.maxEval;
@@ -42,46 +42,26 @@ function [elite,fittEle] = rcGA(fittFun, param)
         end
 %         %By default the algorithm does not have crossover so descoment if
 %         %used
-%         for i=1:D
-%             %binary crossover
-%             if(rand > CR)
-%                 xoff(i) = elite(i);
-%             else
-%                 xoff(i) = sampleSolution(muV(i),stdV(i));
-%             end
-%         end
+        for i=1:D
+            %binary crossover
+            if(rand > CR)
+                xoff(i) = elite(i);
+            else
+                xoff(i) = sampleSolution(muV(i),stdV(i));
+            end
+        end
         %Eval the fitness of the offspring
         fittOff = fittFun(denorm(xoff, lowLim, upLim));
         %compete between elite and xoff and the PV is updated accordigly 
         %the mean is updated in a toroidal way
         if(fittOff < fittEle || (ageDE <= ageAct && ~persis))
-            for i=1:D
-                mu = muV(i);
-                muV(i)  = muV(i) + (1/Np)*(xoff(i) - elite(i));
-                if(muV(i) < -1)
-                    muV(i) = muV(i)+2;
-                elseif (muV(i) > 1)
-                    muV(i) = muV(i)-2;
-                end
-                temp    = stdV(i)^2 + mu^2 - muV(i)^2 + (1/Np)*(xoff(i)^2 - elite(i)^2);
-                stdV(i) = sqrt(abs(temp));
-                elite(i)= xoff(i);
-                fittEle = fittOff;
-                ageAct  = 0; %Used if non persistent
-            end
+            [muV, stdV] = upd_PV(muV, stdV, xoff, elite, Np);
+            elite   = xoff;
+            fittEle = fittOff;
+            ageAct  = 0; %Used if non persistent
         else
-            for i=1:D
-                mu = muV(i);
-                muV(i)  = muV(i) + (1/Np)*(elite(i)-xoff(i));
-                if(muV(i) < -1)
-                    muV(i) = muV(i)+2;
-                elseif (muV(i) > 1)
-                    muV(i) = muV(i)-2;
-                end
-                temp    = stdV(i)^2  + mu^2 - muV(i)^2 + (1/Np)*(elite(i)^2 - xoff(i)^2);
-                stdV(i) = sqrt(abs(temp));
-                ageAct  = ageAct + 1; %used if non persistent
-            end
+            [muV, stdV] = upd_PV(muV, stdV, elite, xoff, Np);
+            ageAct  = ageAct + 1; %used if non persistent
         end
     end
 end

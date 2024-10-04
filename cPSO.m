@@ -60,33 +60,13 @@ function [xgb,fittXgb] = cPSO(fittFun, param)
         fittXlb= fittFun(denorm(xlb, lowLim, upLim));
         tot_evals = tot_evals + 2;
         
-        %Compete and update the PV accordigly
+        %Competition and update the PV accordigly
         %the mean is also updated in a toroidal way
         if(fittXt < fittXlb)
-            for i=1:D
-                mu = muV(i);
-                muV(i)  = muV(i) + (1/Np)*(xt(i) - xlb(i));
-                if(muV(i) < -1)
-                    muV(i) = muV(i)+2;
-                elseif (muV(i) > 1)
-                    muV(i) = muV(i)-2;
-                end
-                stdV(i) = sqrt(abs(stdV(i)^2 + mu^2 - muV(i)^2 + (1/Np)*(xt(i)^2 - xlb(i)^2))); %update of std
-                stdV(i) = min([10, stdV(i)]);  %Tis is to avoid the grow of std, the max value is 10
-            end
+            [muV, stdV] = upd_PV(muV, stdV, xt, xlb, Np);
         else
+            [muV, stdV] = upd_PV(muV, stdV, xlb, xt, Np);
             %same as If part wit xt and xlb positions changed
-            for i=1:D
-                mu = muV(i);
-                muV(i)  = muV(i) + (1/Np)*(xlb(i)-xt(i));
-                if(muV(i) < -1)
-                    muV(i) = muV(i)+2;
-                elseif (muV(i) > 1)
-                    muV(i) = muV(i)-2;
-                end
-                stdV(i) = sqrt(abs(stdV(i)^2 + mu^2 - muV(i)^2 + (1/Np)*(xlb(i)^2 - xt(i)^2)));
-                stdV(i) = min([10, stdV(i)]);
-            end
         end
         %If xt is better solution than global best is updated (compete).
         if(fittXt < fittXgb)
