@@ -21,7 +21,7 @@ function [xgb,fittXgb] = cPSO(fittFun, param)
     xgb     = zeros(D,1);   %Global best
     xlb     = zeros(D,1);   %Local best
     xt      = zeros(D,1);   %trial
-    vt      = 2*rand(D,1) - 1;  %velocity vector
+    vt      = 2 * rand(D,1) - 1;  %velocity vector [0, 1] according to papper
     
     c0=-0.2;
     c1=-0.07;
@@ -41,8 +41,16 @@ function [xgb,fittXgb] = cPSO(fittFun, param)
         for i=1:D
             r1=rand;
             r2=rand;
-            xlb(i)  = sampleSolution(muV(i),stdV(i));   %sample randmly local best
-            vt(i)   = c0*vt(i) + c2*r1*(xgb(i)-xt(i)) + c1*r2*(xlb(i)-xt(i));   %Update velocity of particle
+            xlb(i)  = sampleSolution(muV(i),stdV(i));
+%             xlb(i)  = sampleSolution(0,stdV(i));   %sample randmly local best
+%             xlb(i)  = muV(i) + xlb(i);
+%             if(xlb(i) < -1)          %The particle position is update in a toroidal way
+%                 xlb(i) = xlb(i)+2;
+%             elseif (xlb(i) > 1)
+%                 xlb(i) = xlb(i)-2;
+%             end
+
+            vt(i)   = c0*vt(i) + c1*r2*(xlb(i)-xt(i)) + c2*r1*(xgb(i)-xt(i));   %Update velocity of particle
             vt(i)   = min([vt(i), 1]);                  %Set bounds to the velocity of particle
             vt(i)   = max([vt(i),-1]);
             xt(i)   = xt(i) + vt(i);                    %Update position of xt
@@ -60,18 +68,28 @@ function [xgb,fittXgb] = cPSO(fittFun, param)
         fittXlb= fittFun(denorm(xlb, lowLim, upLim));
         tot_evals = tot_evals + 2;
         
-        %Competition and update the PV accordigly
+        %Compete and update the PV accordigly
         %the mean is also updated in a toroidal way
         if(fittXt < fittXlb)
-            [muV, stdV] = upd_PV(muV, stdV, xt, xlb, Np);
+            [muV,stdV]= upd_PV_D(muV, stdV, xt, xlb, Np);
+            if(fittXt < fittXgb)
+                fittXgb = fittXt;
+                xgb     = xt;
+            end
         else
-            [muV, stdV] = upd_PV(muV, stdV, xlb, xt, Np);
             %same as If part wit xt and xlb positions changed
+            [muV,stdV]= upd_PV_D(muV, stdV, xlb, xt, Np);
+            if(fittXlb < fittXgb)
+                fittXgb = fittXlb;
+                xgb     = xlb;
+            end
         end
+
         %If xt is better solution than global best is updated (compete).
-        if(fittXt < fittXgb)
-            fittXgb = fittXt;
-            xgb     = xt;
-        end
+%         if(fittXt < fittXgb)
+%             fittXgb = fittXt;
+%             xgb     = xt;
+%         end
     end
+%     disp([muV, stdV]);
 end

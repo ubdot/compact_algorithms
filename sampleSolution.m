@@ -20,9 +20,15 @@ function x = sampleSolution(mu, sigma)
 %         x   = mu - sqrt2Sigma * erfinv((smp - C) * (erfMuNeg - erfMuPlus));
 
 %       This is to use the erf functions in the directory
-        erfMuNeg    = my_erf((mu-1)/sqrt2Sigma);
+        
         erfMuPlus   = my_erf((mu+1)/sqrt2Sigma);
-        smp = rand();
+        erfMuNeg    = my_erf((mu-1)/sqrt2Sigma);
+        smp = rand;
+        if smp == 0
+            smp = rand;
+        elseif smp == 1
+            smp = rand;
+        end
         C   = -my_erf((mu + 1) / sqrt2Sigma) / (erfMuNeg - erfMuPlus);
         x   = mu - sqrt2Sigma * inv_erf((smp - C) * (erfMuNeg - erfMuPlus));
     end
