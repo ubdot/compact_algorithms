@@ -14,6 +14,9 @@ function [xgb,fittXgb] = cPSO(fittFun, param)
     Np      = param.NP;
     D       = param.D;
     maxEval = param.maxEval;
+    c0      = param.c0;
+    c1      = param.c1;
+    c2      = param.c2;
 
 %Save in memory the vectors that will be used in the algorithm
     muV     = zeros(D,1);   %\,PV
@@ -23,9 +26,7 @@ function [xgb,fittXgb] = cPSO(fittFun, param)
     xt      = zeros(D,1);   %trial
     vt      = 2 * rand(D,1) - 1;  %velocity vector [0, 1] according to papper
     
-    c0=-0.2;
-    c1=-0.07;
-    c2=3.74;
+
 
 % Init the vectors samplig solution by means of PV
     for i = 1:D
