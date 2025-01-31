@@ -1,4 +1,5 @@
 function [xgb,fittXgb] = cPSO(fittFun, param)
+% function [xgb,fittXgb, plt] = cPSO(fittFun, param)
 %compact Particle Swarm Optimization algorithm, the function receives the
 %fitness function and a variable param, with the follow values
 %   param.lowLim:   Vector with the low limits of the decision variables
@@ -6,9 +7,12 @@ function [xgb,fittXgb] = cPSO(fittFun, param)
 %   param.NP:       Value of the virtual population
 %   param.D:        Number of decision variables
 %   param.maxEval:  Max number of function evaluations
+%   param.c0:       Constant to scalate the velocity
+%   param.c1:       Constant to scalate lb difference
+%   param.c2:       Constant to scalate gb difference
 %   lowLim  = param.lowLim;
 
-%All values are copied to loval variables
+%All values are copied to local variables
     upLim   = param.upLim;
     lowLim  = param.lowLim;
     Np      = param.NP;
@@ -23,74 +27,100 @@ function [xgb,fittXgb] = cPSO(fittFun, param)
     stdV    = zeros(D,1);   %/
     xgb     = zeros(D,1);   %Global best
     xlb     = zeros(D,1);   %Local best
-    xt      = zeros(D,1);   %trial
-    vt      = 2 * rand(D,1) - 1;  %velocity vector [0, 1] according to papper
-    
 
+%Init xt and vt
+    xt      = unifrnd(-1,1,[D,1]);  %[-1, 1] according to paper
+    vt      = unifrnd(-1,1,[D,1]);  %[0, 1] according to paper
+   
+%     %Start variables used to save plot each 10D function evaluations
+%     smpl    = 10*D;
+%     plt     = zeros(1001,1);
+%     indPlt  = 1;
 
-% Init the vectors samplig solution by means of PV
+% Init the xgb solution by means of PV-------------------------------------
     for i = 1:D
         muV(i)  = 0;
         stdV(i) = 10;
         xgb(i)  = sampleSolution(muV(i),stdV(i));
-        xt(i)   = sampleSolution(muV(i),stdV(i));
-    end
+%         xt(i)   = sampleSolution(muV(i),stdV(i));
+    end    
     fittXgb = fittFun(denorm(xgb, lowLim, upLim)); %Get global best value
     tot_evals = 1;
+% Init the xgb solution by means of PV-------------------------------------
+
+
+%     %Save the first point
+%     plt(indPlt)    = fittXgb;
+%     indPlt  = indPlt + 1;
+
 
     while tot_evals < maxEval
+        %Update particle---------------------------------------------------
         for i=1:D
+            %sample xlb by means of PV-------------------------------------
+            xlb(i)  = sampleSolution(muV(i),stdV(i));
+            %sample xlb by means of PV-------------------------------------
+
+            %Velocity and position update----------------------------------
             r1=rand;
             r2=rand;
-            xlb(i)  = sampleSolution(muV(i),stdV(i));
-%             xlb(i)  = sampleSolution(0,stdV(i));   %sample randmly local best
-%             xlb(i)  = muV(i) + xlb(i);
-%             if(xlb(i) < -1)          %The particle position is update in a toroidal way
-%                 xlb(i) = xlb(i)+2;
-%             elseif (xlb(i) > 1)
-%                 xlb(i) = xlb(i)-2;
-%             end
-
-            vt(i)   = c0*vt(i) + c1*r2*(xlb(i)-xt(i)) + c2*r1*(xgb(i)-xt(i));   %Update velocity of particle
-            vt(i)   = min([vt(i), 1]);                  %Set bounds to the velocity of particle
+            vt(i)   = c0*vt(i) + c1*r2*(xlb(i)-xt(i)) + c2*r1*(xgb(i)-xt(i));   
+            %Fix velocity bounds-------------------------------------------
+            vt(i)   = min([vt(i), 1]);                  
             vt(i)   = max([vt(i),-1]);
-            xt(i)   = xt(i) + vt(i);                    %Update position of xt
-
-            if(xt(i) < -1)          %The particle position is update in a toroidal way
+            %Fix velocity bounds-------------------------------------------
+            xt(i)   = xt(i) + vt(i);%Update position of xt
+            %Fix bounds----------------------------------------------------
+            if(xt(i) < -1)          
                 xt(i) = xt(i)+2;
             elseif (xt(i) > 1)
                 xt(i) = xt(i)-2;
             end
-
+            %Fix bounds----------------------------------------------------
+            %Velocity and position update----------------------------------
         end
+        %Update particle---------------------------------------------------
 
-        %Eval fitness value of x trial and local best
+        %competition-------------------------------------------------------
         fittXt = fittFun(denorm(xt, lowLim, upLim));
-        fittXlb= fittFun(denorm(xlb, lowLim, upLim));
-        tot_evals = tot_evals + 2;
-        
-        %Compete and update the PV accordigly
-        %the mean is also updated in a toroidal way
-        if(fittXt < fittXlb)
-            [muV,stdV]= upd_PV_D(muV, stdV, xt, xlb, Np);
-            if(fittXt < fittXgb)
-                fittXgb = fittXt;
-                xgb     = xt;
+        tot_evals = tot_evals + 1;
+        %Prevent exceed  the budget----------------------------------------
+        if tot_evals < maxEval
+            fittXlb= fittFun(denorm(xlb, lowLim, upLim));
+            tot_evals = tot_evals + 1;
+            
+            %Compete xt and xlb--------------------------------------------
+            if(fittXt < fittXlb)
+                [muV,stdV]= upd_PV_D(muV, stdV, xt, xlb, Np);
+                %update xlb if is outperformed-----------------------------
+                if(fittXt < fittXgb) 
+                    fittXgb = fittXt;
+                    xgb     = xt;
+                end
+                %update xlb if is outperformed-----------------------------
+            else
+                [muV,stdV]= upd_PV_D(muV, stdV, xlb, xt, Np);
+                %update xlb if is outperformed-----------------------------
+                if(fittXlb < fittXgb)
+                    fittXgb = fittXlb;
+                    xgb     = xlb;
+                end
+                %update xlb if is outperformed-----------------------------
             end
-        else
-            %same as If part wit xt and xlb positions changed
-            [muV,stdV]= upd_PV_D(muV, stdV, xlb, xt, Np);
-            if(fittXlb < fittXgb)
-                fittXgb = fittXlb;
-                xgb     = xlb;
-            end
+            %Compete xt and xlb--------------------------------------------
+        elseif fittXt < fittXgb
+            fittXgb = fittXt;
+            xgb     = xt;
         end
-
-        %If xt is better solution than global best is updated (compete).
-%         if(fittXt < fittXgb)
-%             fittXgb = fittXt;
-%             xgb     = xt;
+        %Prevent exceed  the budget----------------------------------------
+        %competition-------------------------------------------------------
+        %Save best solution in array---------------------------------------
+%         if mod(tot_evals-1,smpl)==0
+%             plt(indPlt) = fittXgb;
+%             indPlt      = indPlt + 1;
 %         end
+        %Save best solution in array---------------------------------------
     end
 %     disp([muV, stdV]);
+    disp(tot_evals);
 end

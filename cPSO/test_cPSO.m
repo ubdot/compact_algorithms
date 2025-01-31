@@ -19,10 +19,12 @@ disp('running cPSO with parameters:')
 disp(param);
 
 %% Algorithm run
+% plt2=zeros(1001,58);
 for j54 = 1:tot_prob
     fitt = @(x) cec17_func(x,j54);
     for i54=1:num_exe %parfor i54=1:num_exe
         [~,min_Fitt]=cPSO(fitt, param);
+%         [~,~,plt]=cPSO(fitt, param);
         res104(i54, j54) = min_Fitt;
     end
     disp(j54);
