@@ -22,11 +22,16 @@ disp('running ISPO with parameters:')
 disp(param);
 
 %% Algorithm run
+% plt2=zeros(1001,58);  %Uncoment ISPO code internally to plot
+% parpool(6)
 for j54 = 1:tot_prob
     fitt = @(x) cec17_func(x,j54);
-    for i54=1:num_exe %parfor i54=1:num_exe
-        [~,min_Fitt]=ISPO(fitt, param);
+    for i54=1:num_exe
+%     parfor i54=1:num_exe
+        [~,min_fit]=ISPO(fitt, param);
         res104(i54, j54) = min_Fitt;
+%         [~,~, plt]=ISPO(fitt, param); %Uncoment ISPO code internally to plot
+%         plt2(:,i54) = plt;
     end
     disp(j54);
 end
