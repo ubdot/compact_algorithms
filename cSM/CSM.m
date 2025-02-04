@@ -1,6 +1,6 @@
 function [elite,fittele] = CSM(fitt,param)
-    %Based on the papper "A single-solution–compact hybrid algorithm for 
-    %continuous optimization", hibrid between one solution and compact
+% function [elite,fittele, plt] = CSM(fitt,param)
+    %Based on the papper "", hibrid between one solution and compact
     %algorithm, some considerations has been done that the original article
     %does not mention.
     %The algorithm receives parameters:
@@ -28,7 +28,12 @@ function [elite,fittele] = CSM(fitt,param)
    
     budget1 = floor(0.2*maxFE); %Budget assignment values set according to 
     budget2 = ceil(0.8*maxFE);  %values mentioned in the original papper
-    totFE = 0;
+    totFE = 0;    
+
+    % Reserve space to save best solutions in array
+%     smpl    = 10*D;
+%     plt     = zeros(1001,1);
+%     indPlt  = 1;
     %Parameter initialization----------------------------------------------
     
     %Solution initialization-----------------------------------------------
@@ -39,6 +44,9 @@ function [elite,fittele] = CSM(fitt,param)
     fittlb  = fitt(denorm(elite, lowlim, uplim));
     fittele = fitt(denorm(lbest, lowlim, uplim));
     totFE   = totFE + 2;
+    %save first solution
+%     plt(indPlt)    = fittele;
+%     indPlt  = indPlt + 1;
     %Solution initialization-----------------------------------------------
     while totFE < maxFE
         if totFE < budget1
@@ -52,10 +60,18 @@ function [elite,fittele] = CSM(fitt,param)
 %             xoff    = SNUM(xoff, maxFE, totFE, B);
             fittxoff    = fitt(denorm(xoff, lowlim, uplim));
             totFE = totFE + 1;
+            %competition---------------------------------------------------
             if fittxoff <= fittele
                 fittele = fittxoff;
                 elite   = xoff;
             end
+            %competition---------------------------------------------------
+
+            %save best solution
+%             if mod(totFE,smpl)==0
+%                 plt(indPlt) = fittele;
+%                 indPlt  = indPlt + 1;
+%             end
         %Single non uniform mutation on elite -----------------------------
         else
         %Multiple non uniform mutation on compact scheme-------------------
@@ -71,6 +87,7 @@ function [elite,fittele] = CSM(fitt,param)
             fittxoff    = fitt(denorm(xoff, lowlim, uplim));
             totFE       = totFE + 1;
             
+            %competition---------------------------------------------------
             if(fittxoff < fittlb)
                 [muV, stdV] = upd_PV_D(muV, stdV, xoff, lbest, Np);%Non toroidal way, and fixed max and min value
                 lbest   = xoff;
@@ -82,6 +99,12 @@ function [elite,fittele] = CSM(fitt,param)
                 fittele = fittlb;
                 elite   = lbest;
             end
+            %competition---------------------------------------------------
+            %save best solution
+%             if mod(totFE,smpl)==0
+%                 plt(indPlt) = fittele;
+%                 indPlt  = indPlt + 1;
+%             end
         %Multiple non uniform mutation on compact scheme-------------------
         end
     end
@@ -101,12 +124,15 @@ function xoff = MNUM(xoff_p, MaxIt, it, B)
         else
             xoff(i) = xoff(i) - del_num(MaxIt, it, xoff(i) - (-1), B);
         end
-    
-        if xoff(i) < -1
+        
+        %fix bounds--------------------------------------------------------
+        while xoff(i) < -1
             xoff(i) = xoff(i)+2;
-        elseif xoff(i) > 1
+        end
+        while xoff(i) > 1
             xoff(i) = xoff(i)-2;
         end
+        %fix bounds--------------------------------------------------------
     end
 end
 
@@ -122,11 +148,14 @@ function xoff=SNUM(xoff_p, MaxIt, it, B)
         xoff(i) = xoff(i) - del_num(MaxIt, it, xoff(i) - (-1), B);
     end
 
-    if xoff(i) < -1
+    %fix bounds------------------------------------------------------------
+    while xoff(i) < -1
         xoff(i) = xoff(i)+2;
-    elseif xoff(i) > 1
+    end 
+    while xoff(i) > 1
         xoff(i) = xoff(i)-2;
     end
+    %fix bounds------------------------------------------------------------
 end
 
 function delt=del_num(MaxIt, it, y, B)
