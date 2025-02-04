@@ -71,9 +71,11 @@ function [xgb,fittXgb] = cPSO(fittFun, param)
             %Fix velocity bounds-------------------------------------------
             xt(i)   = xt(i) + vt(i);%Update position of xt
             %Fix bounds----------------------------------------------------
-            if(xt(i) < -1)          
+            while(xt(i) < -1)
                 xt(i) = xt(i)+2;
-            elseif (xt(i) > 1)
+            end
+
+            while(xt(i) > 1)
                 xt(i) = xt(i)-2;
             end
             %Fix bounds----------------------------------------------------

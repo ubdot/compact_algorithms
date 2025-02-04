@@ -1,4 +1,5 @@
-function [elite,fittEle] = CScDE(fittFun, param)
+function [elite, fittEle] = CScDE(fittFun, param)
+% function [elite, fittEle, plt] = CScDE(fittFun, param)
 %compact Diferential evolution with DE/rand/1/bin operator and Compound  
 % Sinusoidal parameter adaptation. Implemented according to the papper "A 
 % compact compound sinusoidal differential evolution algorithm for solving 
@@ -28,24 +29,34 @@ function [elite,fittEle] = CScDE(fittFun, param)
     stdV    = zeros(D,1);   %Standard deviation
     elite   = zeros(D,1);   %Elite value
 
+%     %Start variables used to save plot each 10D function evaluations
+%     smpl    = 10*D;
+%     plt     = zeros(1001,1);
+%     indPlt  = 1;
 
     for i=1:D
-        muV(i)  = 0;    %\,Provability vector
+%         muV(i)  = 0;    %\,Provability vector
         stdV(i) = 10;   %/
         elite(i)  = sampleSolution(muV(i),stdV(i)); 
     end
 
     fittEle = fittFun(denorm(elite, lowLim, upLim)); %Get fitness value elite, is necesary denormalize the solution.
 
+    %Save first element in plt array
+%     plt(indPlt)    = fittEle;
+%     indPlt  = indPlt + 1;
+
     for nEval = 2 : maxEval
-        % F and CR values update-------------------------------------------
+        % F and CR values calculation--------------------------------------
         F_it    = 0;
+        CR_it   = 0;
         for w=1:nWaves
-            F_it    = F_it + (0.5*sin(2*pi*freq*(nEval-2)/w) + 1);
+            F_it     = F_it + (0.5*sin(2*pi*freq*(nEval-2)/w) + 1);
+            CR_it    = CR_it + (0.5*sin(2*pi*freq*(nEval-2)/w) + 1);
         end
+        CR_it   = 0.6 + 0.1*(1/nWaves)*CR_it;
         F_it    = (1/nWaves)*F_it;
-        CR_it   = 0.6 + 0.1*F_it;
-        % F and CR values update-------------------------------------------
+        % F and CR values calculation--------------------------------------
         % Exponential crossover--------------------------------------------
         xoff=elite;
         i = randi(D);
@@ -56,9 +67,12 @@ function [elite,fittEle] = CScDE(fittFun, param)
         xt  = sampleSolution(muV(i),stdV(i));
 
         xoff(i) = xt + F_it*(xr - xs);
-        if(xoff(i) < -1)
+
+        while(xoff(i) < -1)
             xoff(i) = xoff(i)+2;
-        elseif (xoff(i) > 1)
+        end
+
+        while(xoff(i) > 1)
             xoff(i) = xoff(i)-2;
         end
         
@@ -71,16 +85,16 @@ function [elite,fittEle] = CScDE(fittFun, param)
             if i== pos_temp %To prevent inf cicles
                 break;
             end
-            
             xr  = sampleSolution(muV(i),stdV(i));
             xs  = sampleSolution(muV(i),stdV(i));
             xt  = sampleSolution(muV(i),stdV(i));
 
             xoff(i) = xt + F_it*(xr - xs);
-
-            if(xoff(i) < -1)
+            while(xoff(i) < -1)
                 xoff(i) = xoff(i)+2;
-            elseif (xoff(i) > 1)
+            end
+
+            while(xoff(i) > 1)
                 xoff(i) = xoff(i)-2;
             end
 
@@ -94,8 +108,14 @@ function [elite,fittEle] = CScDE(fittFun, param)
             elite   = xoff;
             fittEle = fittOff;
         else % this part is the same of the if part just invert the elite and offspring to update the PV
-            [muV, stdV] = upd_PV(muV, stdV, elite, xoff, Np);   %No toroidal way update
+            [muV, stdV] = upd_PV_D(muV, stdV, elite, xoff, Np);   %No toroidal way update
         end
+
+        %Save best solution in array-----------------------------
+%         if mod(nEval,smpl)==0
+%             plt(indPlt) = fittEle;
+%             indPlt  = indPlt + 1;
+%         end
         % Competition------------------------------------------------------
     end
 end
