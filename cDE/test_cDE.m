@@ -6,7 +6,7 @@
 res104   = zeros(num_exe,tot_prob);
 % rng(1,"twister");
 %% Parameters used with cDE
-param.D         = 10;
+param.D         = D;
 param.maxEval   = param.D*10000;
 param.lowLim    = -100;
 param.upLim     = 100;

@@ -8,7 +8,7 @@ res104   = zeros(num_exe,tot_prob);
 % rng(1,"twister");
 %% Used parameters with OEMDE
 param.pop   = 6;
-param.D     = 10;
+param.D     = D;
 param.upLim = 100;
 param.lowLim= -100;
 param.CR    = 0.9;
