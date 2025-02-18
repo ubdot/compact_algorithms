@@ -9,7 +9,7 @@ function x = sampleSolution(mu, sigma)
     if(sigma < 1e-8)
         x=mu;
     else
-        sqrt2Sigma  = sqrt(2) * sigma;
+%         sqrt2Sigma  = sqrt(2) * sigma;
 %         This is to use the integrated functions in matlab, some package
 %         must be downloaded
 %         erfMuNeg    = erf((mu-1)/sqrt2Sigma);
@@ -19,18 +19,17 @@ function x = sampleSolution(mu, sigma)
 %         C   = -erf((mu + 1) / sqrt2Sigma) / (erfMuNeg - erfMuPlus);
 %         x   = mu - sqrt2Sigma * erfinv((smp - C) * (erfMuNeg - erfMuPlus));
 
-%       This is to use the erf functions in the directory
-        
-        erfMuPlus   = my_erf((mu+1)/sqrt2Sigma);
-        erfMuNeg    = my_erf((mu-1)/sqrt2Sigma);
+        sqrt2Sigma  = 1.41421356237310 * sigma;
+        invsqrt2Sigma = 1/sqrt2Sigma;
+        erfMuPlus   = my_erf((mu+1)*invsqrt2Sigma);
+        erfMuNeg    = my_erf((mu-1)*invsqrt2Sigma);
         smp = rand;
         if smp == 0
             smp = rand;
         elseif smp == 1
             smp = rand;
         end
-        C   = -my_erf((mu + 1) / sqrt2Sigma) / (erfMuNeg - erfMuPlus);
-        x   = mu - sqrt2Sigma * inv_erf((smp - C) * (erfMuNeg - erfMuPlus));
+        x   = mu - sqrt2Sigma * inv_erf(smp*(erfMuNeg - erfMuPlus) + erfMuPlus);
     end
 end
 
