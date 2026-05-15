@@ -22,7 +22,10 @@ function x = sampleSolution(mu, sigma)
         sqrt2Sigma  = 1.41421356237310 * sigma;
         invsqrt2Sigma = 1/sqrt2Sigma;
         erfMuPlus   = my_erf((mu+1)*invsqrt2Sigma);
+        
         erfMuNeg    = my_erf((mu-1)*invsqrt2Sigma);
+        %disp([erfMuPlus,erfMuNeg])
+        %smp = 0.7;
         smp = rand;
         if smp == 0
             smp = rand;
@@ -33,3 +36,4 @@ function x = sampleSolution(mu, sigma)
     end
 end
 
+> 0x80000000

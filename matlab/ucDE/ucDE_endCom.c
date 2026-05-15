@@ -90,7 +90,7 @@ int main(int argc, char* argv[]){
     Np      = Np*(double)D;
     n_pop   = 5;
     elite   = 0;
-    max_eval= 10000*D;
+    max_eval= 25000;//10000*D;
     tot_eval= 0;
     mu_v    = (double*)calloc(D, sizeof(double));
     std_v   = (double*)calloc(D, sizeof(double));

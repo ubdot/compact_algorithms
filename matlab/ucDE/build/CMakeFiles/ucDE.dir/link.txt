@@ -1,0 +1,3 @@
+"C:\Program Files\CMake\bin\cmake.exe" -E rm -f CMakeFiles\ucDE.dir/objects.a
+C:\w64devkit\bin\ar.exe qc CMakeFiles\ucDE.dir/objects.a @CMakeFiles\ucDE.dir\objects1.rsp
+C:\w64devkit\bin\cc.exe -Wl,--whole-archive CMakeFiles\ucDE.dir/objects.a -Wl,--no-whole-archive -o ucDE.exe -Wl,--out-implib,libucDE.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\ucDE.dir\linkLibs.rsp
